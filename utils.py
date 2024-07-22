@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
+from nltk.tokenize import word_tokenize
 
 def generate_json_file(file_and_dest):
     for file in file_and_dest: 
@@ -34,3 +35,20 @@ def img_plot_html(img_plot): # the parameter figure is of type Figure of Matplot
     encoded = base64.b64encode(tmpfile.getvalue()).decode('utf-8')
     img_plot_html = "<div style='text-align: center;'><img src=\'data:image/png;base64,{}\'></div>".format(encoded)
     return img_plot_html
+
+
+def custom_word_tokenizer(s, return_offsets_mapping=True): # need to write a custom function, because shap library works with 'hugging-face' tokenizer style
+    tokens = word_tokenize(s)
+    input_ids = tokens  # For simplicity, we directly use tokens as input_ids
+    
+    if return_offsets_mapping:
+        # Create offset mapping
+        offset_mapping = []
+        pos = 0
+        for token in tokens:
+            start = s.find(token, pos)
+            end = start + len(token)
+            offset_mapping.append((start, end))
+            pos = end
+        return {"input_ids": input_ids, "offset_mapping": offset_mapping}
+    return {"input_ids": input_ids}

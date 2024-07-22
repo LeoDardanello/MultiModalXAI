@@ -38,14 +38,14 @@ class OnlyImageCls(nn.Module):
 class SingleModAnalyzer:
     def __init__(self,
                  model,
-                 txt_masker,
+                 txt_tokenizer,
                  img_shape, # CxWxH
                  mask_token_txt="..."):
         
         self.img_shape = img_shape
         
         self.only_txt_classifier = OnlyTextCls(model)
-        self.txt_masker = shap.maskers.Text(txt_masker, mask_token = mask_token_txt, collapse_mask_token = False)
+        self.txt_masker = shap.maskers.Text(txt_tokenizer, mask_token = mask_token_txt, collapse_mask_token = False)
         self.txt_explainer = shap.Explainer(self.only_txt_classifier, masker=self.txt_masker)
         
         self.only_img_classifier = OnlyImageCls(model)
@@ -86,7 +86,7 @@ class SingleModAnalyzer:
         file.write(shap.plots.text(txt_shap_val[0], display=False))
 
         shap.image_plot(
-            shap_values=img_shap_val.values, # da aggiustare .... vedi meglio le misure delle immagini
+            shap_values=img_shap_val.values,
             pixel_values=img_shap_val.data.numpy(),
         )
 

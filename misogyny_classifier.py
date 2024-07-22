@@ -11,8 +11,12 @@ class MisogynyCls(nn.Module):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") # Check if CUDA is available
         
         # Pretrained CLIP loading...
-        self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-        #self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32", device_map='cuda')
+        
+        if torch.cuda.is_available():
+            self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32", device_map='cuda')
+        else:   
+            self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+
         self.clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
 

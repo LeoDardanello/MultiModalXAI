@@ -49,7 +49,7 @@ if __name__ == "__main__":
     classifier.load_state_dict(checkpoint)
 
     # text masker definition
-    txt_masker = AutoTokenizer.from_pretrained("bert-base-cased")
+    txt_tokenizer = custom_word_tokenizer # taken from utils.py
 
     data = MultimodalDataset("/kaggle/input/dataset-wow/MAMI DATASET/MAMI DATASET/training/TRAINING", "/kaggle/working/train_image_text.json")
     data = DataLoader(data, 100, shuffle=True, pin_memory=True)
@@ -59,8 +59,8 @@ if __name__ == "__main__":
     txt_to_explain = texts[27]
 
     analyzer = SingleModAnalyzer(classifier,
-                                txt_masker,
-                                (3, 440, 440), # WxHxC
-                                mask_token_txt="miao") # da sviluppare l'img_token customizzabile
+                                txt_tokenizer,
+                                (3, 440, 440), # CxWxH
+                                mask_token_txt="...") # da sviluppare l'img_token customizzabile
 
     analyzer.SHAP_single_mod(txt_to_explain, img_to_explain, "/kaggle/working/results.html")
