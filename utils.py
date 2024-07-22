@@ -4,7 +4,11 @@ import os
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
+import nltk
 from nltk.tokenize import word_tokenize
+
+nltk.download('punkt')
+
 
 def generate_json_file(file_and_dest):
     for file in file_and_dest: 

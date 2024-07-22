@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 from PIL import Image
 import os
+import numpy as np
 from tqdm import tqdm
 from transformers import AutoTokenizer
 from misogyny_trainer import *
@@ -16,8 +17,8 @@ if __name__ == "__main__":
 
     #images_path = "/kaggle/input/dataset-wow/MAMI DATASET/MAMI DATASET/training/TRAINING"
 
-    file_and_dest = [('/kaggle/input/dataset-wow/train_image_text.tsv','/kaggle/working/train_image_text.json'),
-                    ('/kaggle/input/dataset-wow/test_image_text.tsv','/kaggle/working/test_image_text.json')]
+    file_and_dest = [('train_image_text.tsv','train_image_text.json'),
+                    ('test_image_text.tsv','test_image_text.json')]
 
     generate_json_file(file_and_dest)
     
@@ -44,23 +45,26 @@ if __name__ == "__main__":
 
 
     # loading the model to explain
-    checkpoint = torch.load('/kaggle/input/model-params/model_3.pth', map_location=torch.device('cpu'))
-    classifier = MisogynyCls(5)
+    checkpoint = torch.load('model_3.pth', map_location=torch.device('cpu'))
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    classifier = MisogynyCls(5).to(device)
     classifier.load_state_dict(checkpoint)
 
     # text masker definition
     txt_tokenizer = custom_word_tokenizer # taken from utils.py
 
-    data = MultimodalDataset("/kaggle/input/dataset-wow/MAMI DATASET/MAMI DATASET/training/TRAINING", "/kaggle/working/train_image_text.json")
+    data = MultimodalDataset("MAMI DATASET/training/TRAINING", "train_image_text.json")
     data = DataLoader(data, 100, shuffle=True, pin_memory=True)
     images, texts, _, _, _, _, _ = next(iter(data))
-    images = [ToTensor()(Image.open(f"{os.path.join('/kaggle/input/dataset-wow/MAMI DATASET/MAMI DATASET/training/TRAINING', img)}")) for img in images]
-    img_to_explain = images[27]
+    images = [ToTensor()(Image.open(f"{os.path.join('MAMI DATASET/training/TRAINING', img)}")) for img in images]
+    img_to_explain = torch.clamp(images[27], min=0.0, max=np.float64(1)) # 27 is a random index
+    img_to_explain = (img_to_explain * 255).byte()
     txt_to_explain = texts[27]
 
     analyzer = SingleModAnalyzer(classifier,
                                 txt_tokenizer,
                                 (3, 440, 440), # CxWxH
                                 mask_token_txt="...") # da sviluppare l'img_token customizzabile
-
-    analyzer.SHAP_single_mod(txt_to_explain, img_to_explain, "/kaggle/working/results.html")
+    
+    print(img_to_explain)
+    analyzer.SHAP_single_mod(txt_to_explain, img_to_explain, "results.html")

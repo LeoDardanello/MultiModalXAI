@@ -24,7 +24,7 @@ class MultimodalDataset(Dataset): # Dataset for handling multimodal data
         return self.file_paths[idx], self.text_list[idx], self.labels_misogyny[idx], self.shaming_label_list[idx], self.stereotype_label_list[idx], self.objectification_label_list[idx], self.violence_label_list[idx]
     
 def load_json_file(json_file_path):
-    with open(json_file_path,"r") as f:
+    with open(json_file_path,"r", encoding='utf-8') as f:
         data = json.load(f)
         text_list = [] # list of the text related to each image
         image_list = [] # list of images path
