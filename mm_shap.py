@@ -54,14 +54,7 @@ class MMSHAP:
         
         shap_values_img = shap_values_img.permute(1, 2, 0)
         self.img = self.img.permute(1, 2, 0)
-        
-        print(f'after shap_values_img.shape: {shap_values_img.shape}')
-        print(f'after self.image.shape: {self.img.shape}')
-        
-        
-        
-        print(f"after after shap_values_img: {shap_values_img.unsqueeze(0).numpy().shape}")
-        print(f"after after self.img.shape: {self.img.unsqueeze(0).numpy().shape}")
+
         
         shap_values_img = shap_values_img
         
@@ -69,24 +62,18 @@ class MMSHAP:
             shap_values = [shap_values_img.unsqueeze(0).numpy()], 
             pixel_values = self.img.unsqueeze(0).numpy()
         )
+
+        shap_explanation = shap.Explanation(values=shap_values_txt, feature_names=data_txt)
+        shap.plots.bar(shap_explanation, max_display=10) # Create a bar plot
+        plt.show()
         
-        #shap.summary_plot(shap_values_txt.unsqueeze(0), self.txt)
-        #shap.plots.text(txt_shap_val[0], display=False)
-        
-        # Assuming data_txt and shap_values_txt are already defined
-        shap_df = pd.DataFrame({'Feature': data_txt, 'SHAP Value': shap_values_txt})
+        """
+        shap_df = pd.DataFrame({'Feature': data_txt, 'SHAP Value': shap_values_txt})   # Assuming data_txt and shap_values_txt are already defined
+        shap_df = shap_df.sort_values(by='SHAP Value', ascending=False)  # Sort the DataFrame by SHAP values
 
-        # Sort the DataFrame by SHAP values
-        shap_df = shap_df.sort_values(by='SHAP Value', ascending=False)
-
-        # Define the number of top features to visualize
-        k = 10  # Change this value as needed
-
-        # Select the top k features
-        top_shap_df = shap_df.head(k)
-
-        # Assign colors based on SHAP values
-        colors = ['red' if value > 0 else 'blue' for value in top_shap_df['SHAP Value']]
+        k = 10 # Define the number of top features to visualize
+        top_shap_df = shap_df.head(k) # Select the top k features
+        colors = ['red' if value > 0 else 'blue' for value in top_shap_df['SHAP Value']]  # Assign colors based on SHAP values
 
         # Create a bar plot
         plt.figure(figsize=(10, 6))
@@ -96,14 +83,7 @@ class MMSHAP:
         plt.axvline(0, color='grey', linewidth=0.8, linestyle='--')  # Add a vertical line at x=0
         plt.grid(axis='x', linestyle='--', alpha=0.7)
         plt.show()
-        
-        
-        
-        print(f"after after shap_values_img: {shap_values_img.unsqueeze(0).numpy().shape}")
-        print(f"after after self.img.shape: {self.img.unsqueeze(0).numpy().shape}")
-        print("HALLLLOO",shap_values_img.unsqueeze(0).numpy().shape)
-        print("HALLAAAAAAAA",self.img.unsqueeze(0).numpy().shape)
-        
+        """
         
     def custom_masker(self, mask, x):
         masked_X = np.copy(x).reshape(1, -1) # fai controllo per vedere se effettivamente ha una shape  e.g. (1, 15)
