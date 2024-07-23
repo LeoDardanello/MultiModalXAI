@@ -31,9 +31,6 @@ class MMSHAP:
         shap_values_patches = shap_values.values[0, self.num_txt_token:]
         shap_values_img = torch.zeros(self.img.shape) # DA RIEMPIRE CON GLI SHAPLEY VALUE CALCOLATI SULLE PATCH
         data_txt = shap_values.data[0, :self.num_txt_token]
-
-        print((shap_values_patches > 0.00001).sum())
-
         
         print(f'shap_values_txt.shape: {shap_values_txt.shape}')
         print(f'shap_values_patches.shape: {shap_values_patches.shape}')
@@ -54,14 +51,14 @@ class MMSHAP:
         
         shap_values_img = shap_values_img.permute(1, 2, 0)
         self.img = self.img.permute(1, 2, 0)
-
-        
         shap_values_img = shap_values_img
         
         shap.image_plot(
             shap_values = [shap_values_img.unsqueeze(0).numpy()], 
             pixel_values = self.img.unsqueeze(0).numpy()
         )
+
+        print(f'shap_values.base_values: {shap_values.base_values}')
 
         shap_explanation = shap.Explanation(values=shap_values_txt, feature_names=data_txt)
         shap.plots.bar(shap_explanation, max_display=10) # Create a bar plot
@@ -152,12 +149,8 @@ class MMSHAP:
         self.patch_size = patch_size
 
         explainer = shap.Explainer(self.get_model_prediction, self.custom_masker, silent=True)
-
-        # print(txt_tokens.shape)
-        # print(type(txt_tokens))
         txt_tokens = txt_tokens.reshape(1, -1)
-        #print(txt_tokens)
-
+    
         shap_values = explainer(txt_tokens)
         self.display_image_text(shap_values)
                     

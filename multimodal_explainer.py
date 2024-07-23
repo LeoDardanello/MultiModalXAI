@@ -81,21 +81,20 @@ class SingleModAnalyzer:
         print(img_shap_val.values.shape)
         print(img_shap_val.data.numpy().shape)
 
-        print(f"shapley values for the text: {txt_shap_val}")
+        #print(f"shapley values for the text: {txt_shap_val}")
         """ shap.plots.bar(txt_shap_val) """
-        plt.figure(figsize=(10, 6))
-        plt.barh(txt_shap_val.data[0], txt_shap_val.values[0], color='skyblue')
+        #plt.figure(figsize=(10, 6))
+        #plt.barh(txt_shap_val.data[0], txt_shap_val.values[0], color='skyblue')
 
-        """      img_plot = plt.gcf()
-        img_plot.savefig(dest_folder + "_text.jpeg") """
 
         shap.image_plot(
             shap_values=img_shap_val.values,
             pixel_values=img_shap_val.data.numpy(),
         )
 
-        """ img_plot = plt.gcf()
-        img_plot.savefig(dest_folder + "_image.jpeg") """
+        shap_explanation = shap.Explanation(values=txt_shap_val.values, feature_names=txt_shap_val.data)
+        shap.plots.bar(shap_explanation, max_display=10) # Create a bar plot
+        plt.show()
 
        
         
