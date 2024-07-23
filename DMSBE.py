@@ -18,21 +18,25 @@ class DMSBE():
                                                         self.token_for_text_masking)
         self.multimodal_interaction_explainer = MMSHAP(self.model)
 
-    def explain(self, txt_to_explain, img_to_explain,num_text_image_to_explain=1):
-        mmscore_list= np.array([])
-        for i in range(num_text_image_to_explain):
-            self.disentagled_modalities_explainer.SHAP_single_mod(txt_to_explain[i], img_to_explain[i], "results.html")
+    def explain(self, txt_to_explain, img_to_explain):
+        resize = transforms.Resize((self.img_shape[1], self.img_shape[2]))
+
+        mmscore_list= []
+        
+        for i in range(len(txt_to_explain)):
+            resized_img_to_explain = resize(img_to_explain[i])
+            self.disentagled_modalities_explainer.SHAP_single_mod(txt_to_explain[i], resized_img_to_explain, "single_mode")
+            t_shap=self.multimodal_interaction_explainer.wrapper_mmscore(txt_to_explain[i], resized_img_to_explain)
+            mmscore_list.append(t_shap)
+        print(f"Mean multimodal interaction score (MM-SHAP) among {i+1} sample: {np.mean(np.array(mmscore_list))} +/- {np.std(np.array(mmscore_list))}")
+
+    def only_disentagled_modalities_explain(self, txt_to_explain, img_to_explain):
+        for i in range(len(txt_to_explain)):
+            self.disentagled_modalities_explainer.SHAP_single_mod(txt_to_explain[i], img_to_explain[i], "single_mod")
+
+    def only_multimodal_interaction_explain(self, txt_to_explain, img_to_explain):
+        mmscore_list= []
+        for i in range(len(txt_to_explain)):
             t_shap=self.multimodal_interaction_explainer.wrapper_mmscore(txt_to_explain[i], img_to_explain[i])
             mmscore_list.append(t_shap)
-        print(f"Mean multimodal interaction score (MM-SHAP) among {i} sample: {np.mean(mmscore_list)} +/- {np.std(mmscore_list)}")
-
-    def only_disentagled_modalities_explain(self, txt_to_explain, img_to_explain,num_text_image_to_explain=1):
-        for i in range(num_text_image_to_explain):
-            self.disentagled_modalities_explainer.SHAP_single_mod(txt_to_explain[i], img_to_explain[i], "results.html")
-
-    def only_multimodal_interaction_explain(self, txt_to_explain, img_to_explain,num_text_image_to_explain=1):
-        mmscore_list= np.array([])
-        for i in range(num_text_image_to_explain):
-            t_shap=self.multimodal_interaction_explainer.wrapper_mmscore(txt_to_explain[i], img_to_explain[i])
-            mmscore_list.append(t_shap)
-        print(f"Mean multimodal interaction score (MM-SHAP) among {i} sample: {np.mean(mmscore_list)} +/- {np.std(mmscore_list)}")
+        print(f"Mean multimodal interaction score (MM-SHAP) among {i+1} sample: {np.mean(np.array(mmscore_list))} +/- {np.std(np.array(mmscore_list))}")
