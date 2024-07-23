@@ -61,19 +61,21 @@ if __name__ == "__main__":
     images = [ToTensor()(Image.open(f"{os.path.join('MAMI DATASET/training/TRAINING', img)}")) for img in images]
     img_to_explain = torch.clamp(images[27], min=0.0, max=np.float64(1)) # 27 is a random index
     img_to_explain = (img_to_explain * 255).byte() # returns a tensor to avoid clamp errors
-    txt_to_explain = texts[27]
-
-    """     analyzer = SingleModAnalyzer(classifier,
-                                txt_tokenizer,
-                                (3, 440, 440), # CxWxH
-                                mask_token_txt="...") # da sviluppare l'img_token customizzabile
     
-    print(img_to_explain)
-    analyzer.SHAP_single_mod(txt_to_explain, img_to_explain, "results.html")
+    """     img_to_explain = torch.clamp(images[28], min=0.0, max=np.float64(1)) # 27 is a random index
+    img_to_explain2 = (img_to_explain * 255).byte() # returns a tensor to avoid clamp errors
 
-    print("computing mmshap...")
-    MMSHAP = MMSHAP(classifier)
-    MMSHAP.wrapper_mmscore([txt_to_explain], [img_to_explain]) 
-    """
-    explainer=DMSBE(classifier, txt_tokenizer, (3, 440, 440))
+    img_to_explain = torch.clamp(images[29], min=0.0, max=np.float64(1)) # 27 is a random index
+    img_to_explain3 = (img_to_explain * 255).byte() # returns a tensor to avoid clamp errors """
+
+
+    """     img_to_explain = [img_to_explain1, img_to_explain2, img_to_explain3] """
+    """txt_to_explain = [texts[27], texts[28], texts[29]]"""
+
+    txt_to_explain= texts[27]
+
+    print(f'initial shape: {len(img_to_explain)}')
+
+    explainer=DMSBE(classifier, txt_tokenizer, (3, 224, 224))
+    # .explain() takes a list of texts and a list of images,if explaining a single sample pass a list with one element
     explainer.explain([txt_to_explain], [img_to_explain])
