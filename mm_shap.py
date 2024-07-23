@@ -19,7 +19,8 @@ class MMSHAP:
         self.num_txt_token = None
         self.patch_size = None
         
-def display_image_text(self, shap_values, num_features_to_visualize):
+
+    def display_image_text(self, shap_values):
         print(f'shap_values.shape: {shap_values.shape}')
         
         # here the actual masking of the image is happening. The custom masker only specified which patches to mask, but no actual masking has happened
@@ -50,6 +51,45 @@ def display_image_text(self, shap_values, num_features_to_visualize):
         
         print(f'after shap_values_img.shape: {shap_values_img.shape}')
         print(f'after self.image.shape: {self.img.shape}')
+        
+        
+        
+        print(f"after after shap_values_img: {shap_values_img.unsqueeze(0).numpy().shape}")
+        print(f"after after self.img.shape: {self.img.unsqueeze(0).numpy().shape}")
+        
+        shap_values_img = shap_values_img
+        
+        shap.image_plot(
+            shap_values = [shap_values_img.unsqueeze(0).numpy()], 
+            pixel_values = self.img.unsqueeze(0).numpy()
+        )
+        
+        #shap.summary_plot(shap_values_txt.unsqueeze(0), self.txt)
+        #shap.plots.text(txt_shap_val[0], display=False)
+        
+        # Assuming data_txt and shap_values_txt are already defined
+        shap_df = pd.DataFrame({'Feature': data_txt, 'SHAP Value': shap_values_txt})
+
+        # Sort the DataFrame by SHAP values
+        shap_df = shap_df.sort_values(by='SHAP Value', ascending=False)
+
+        # Define the number of top features to visualize
+        k = 10  # Change this value as needed
+
+        # Select the top k features
+        top_shap_df = shap_df.head(k)
+
+        # Assign colors based on SHAP values
+        colors = ['red' if value > 0 else 'blue' for value in top_shap_df['SHAP Value']]
+
+        # Create a bar plot
+        plt.figure(figsize=(10, 6))
+        plt.barh(top_shap_df['Feature'], top_shap_df['SHAP Value'], color=colors)
+        plt.xlabel('SHAP Value')
+        plt.title(f'Top {k} Features Based on SHAP Values')
+        plt.axvline(0, color='grey', linewidth=0.8, linestyle='--')  # Add a vertical line at x=0
+        plt.grid(axis='x', linestyle='--', alpha=0.7)
+        plt.show()
         
         
         
