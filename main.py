@@ -75,6 +75,5 @@ if __name__ == "__main__":
     MMSHAP = MMSHAP(classifier)
     MMSHAP.wrapper_mmscore([txt_to_explain], [img_to_explain]) 
     """
-    print("image_to_explain shape: ", img_to_explain.shape)
     explainer=DMSBE(classifier, txt_tokenizer, (3, 440, 440))
     explainer.explain([txt_to_explain], [img_to_explain])

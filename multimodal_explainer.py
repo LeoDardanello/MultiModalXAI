@@ -76,10 +76,8 @@ class SingleModAnalyzer:
         return shap_values
     
     def SHAP_single_mod(self, txt_to_explain, img_to_explain, dest_folder):
-        print(f"image shape: {img_to_explain.shape}")
         img_shap_val = self.img_only_SHAP(img_to_explain)
         txt_shap_val = self.txt_only_SHAP(txt_to_explain)
-        print(f"txt shap: {txt_shap_val}")
         print(img_shap_val.values.shape)
         print(img_shap_val.data.numpy().shape)
 
