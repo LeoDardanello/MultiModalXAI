@@ -5,6 +5,8 @@ import copy
 import math 
 from tqdm import tqdm
 from PIL import Image
+import pandas as pd
+import matplotlib.pyplot as plt
 from torchvision import transforms
 from nltk.tokenize import word_tokenize
 
@@ -12,14 +14,15 @@ from nltk.tokenize import word_tokenize
 class MMSHAP:
     
     def __init__(self,
-                 classifier):
+                 classifier,
+                 max_text_features_to_visualize=15):
         self.classifier = classifier
         self.img = None
         self.txt = None
         self.num_txt_token = None
         self.patch_size = None
+        self.max_text_features_to_visualize = max_text_features_to_visualize
         
-
     def display_image_text(self, shap_values):
         print(f'shap_values.shape: {shap_values.shape}')
         
@@ -28,14 +31,17 @@ class MMSHAP:
         shap_values_patches = shap_values.values[0, self.num_txt_token:]
         shap_values_img = torch.zeros(self.img.shape) # DA RIEMPIRE CON GLI SHAPLEY VALUE CALCOLATI SULLE PATCH
         data_txt = shap_values.data[0, :self.num_txt_token]
-         
+
+        print((shap_values_patches > 0.00001).sum())
+
+        
         print(f'shap_values_txt.shape: {shap_values_txt.shape}')
         print(f'shap_values_patches.shape: {shap_values_patches.shape}')
         print(f'shap_values_img.shape: {shap_values_img.shape}')
         print(f'self.image.shape: {self.img.shape}')
         print(f'patch_size: {self.patch_size}')
         
-        row_cols = 224 // self.patch_size # 224 / 32 = 7
+        row_cols = self.img.shape[1] // self.patch_size # 224 / 32 = 7
 
         # PATCHIFY THE IMAGE & SET THE PATCH TO THE RIGHT SHAPLEY VALUE (THIS MATRIX WILL THEN BE PASSED TO THE IMAGE_PLOT FUNCTION IN SHAP)
         for (i, shap_val) in enumerate(shap_values_patches):
@@ -95,40 +101,8 @@ class MMSHAP:
         
         print(f"after after shap_values_img: {shap_values_img.unsqueeze(0).numpy().shape}")
         print(f"after after self.img.shape: {self.img.unsqueeze(0).numpy().shape}")
-        
-        shap_values_img = shap_values_img
-        
-        shap.image_plot(
-            shap_values = [shap_values_img.unsqueeze(0).numpy()], 
-            pixel_values = self.img.unsqueeze(0).numpy()
-        )
-        
-        #shap.summary_plot(shap_values_txt.unsqueeze(0), self.txt)
-        #shap.plots.text(txt_shap_val[0], display=False)
-        
-        # Assuming data_txt and shap_values_txt are already defined
-        shap_df = pd.DataFrame({'Feature': data_txt, 'SHAP Value': shap_values_txt})
-
-        # Sort the DataFrame by SHAP values
-        shap_df = shap_df.sort_values(by='SHAP Value', ascending=False)
-
-        # Define the number of top features to visualize
-
-        # Select the top k features
-        top_shap_df = shap_df.head(num_features_to_visualize)
-
-        # Create a color map based on SHAP values
-        norm = plt.Normalize(top_shap_df['SHAP Value'].min(), top_shap_df['SHAP Value'].max())
-        colors = plt.cm.coolwarm(norm(top_shap_df['SHAP Value']))  # Using coolwarm for blue to red
-
-        # Create a bar plot
-        plt.figure(figsize=(10, 6))
-        plt.barh(top_shap_df['Feature'], top_shap_df['SHAP Value'], color=colors)
-        plt.xlabel('SHAP Value')
-        plt.title(f'Top {k} Features Based on SHAP Values')
-        plt.axvline(0, color='grey', linewidth=0.8, linestyle='--')  # Add a vertical line at x=0
-        plt.grid(axis='x', linestyle='--', alpha=0.7)
-        plt.show()
+        print("HALLLLOO",shap_values_img.unsqueeze(0).numpy().shape)
+        print("HALLAAAAAAAA",self.img.unsqueeze(0).numpy().shape)
         
         
     def custom_masker(self, mask, x):
@@ -185,8 +159,6 @@ class MMSHAP:
         return text_score, image_score
     
     def wrapper_mmscore(self, txt_to_explain, img_to_explain): #img must be a tensor of shape CxWxH
-        
-            
         txt_tokens = word_tokenize(txt_to_explain)
         num_txt_tokens = len(txt_tokens)
         p = int(math.ceil(np.sqrt(num_txt_tokens)))
