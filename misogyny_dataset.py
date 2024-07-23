@@ -2,7 +2,6 @@ import torch
 from torch.utils.data import Dataset
 from tqdm import tqdm
 import json
-import os
 
 class MultimodalDataset(Dataset): # Dataset for handling multimodal data
     def __init__(self, images_dir, json_file_path): # dir_path -> directory path where images are stored / json_file_path -> file path for metadata (including labels)   

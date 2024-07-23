@@ -1,10 +1,8 @@
 import shap
 import torch
 import numpy as np
-from PIL import Image
-import os, copy, sys
-import math, json
-import random
+import copy 
+import math 
 from tqdm import tqdm
 from PIL import Image
 from torchvision import transforms
@@ -47,11 +45,12 @@ class MMSHAP:
         
         # plot shapley values for texts and images
         
-        print(f"shap_values_img.unsqueeze(3): {shap_values_img.unsqueeze(3).shape}")
-        
+        print(f"shap_values_img.unsqueeze(0): {shap_values_img.unsqueeze(0).shape}")
+        print(f"pixel_values: {np.expand_dims(self.img.numpy(),0).shape}")
+
         shap.image_plot(
-            shap_values=shap_values_img.unsqueeze(3), 
-            pixel_values=self.img.numpy(),
+            shap_values=shap_values_img.unsqueeze(0), 
+            pixel_values=np.expand_dims(self.img.numpy(),0)
         )
         
         #shap.plots.text(txt_shap_val[0], display=False)
@@ -112,42 +111,36 @@ class MMSHAP:
         image_score = image_contrib / (text_contrib + image_contrib) # is just 1 - text_score in the two modalities case
         return text_score, image_score
     
-    def wrapper_mmscore(self, txt_to_explain, img_to_explain): # specify better the types of the parameters (img must be a tensor of shape CxWxH)
-        mmscore_list = []
+    def wrapper_mmscore(self, txt_to_explain, img_to_explain): #img must be a tensor of shape CxWxH
         
-        for txt, img in zip(txt_to_explain, img_to_explain):
             
-            txt_tokens = word_tokenize(txt)
-            num_txt_tokens = len(txt_tokens)
-            p = int(math.ceil(np.sqrt(num_txt_tokens)))
-            patch_size = 224 // p
-            img_tokens = [" " for el in range(1, p**2+1)]
-            txt_tokens = np.array(txt_tokens + img_tokens)
+        txt_tokens = word_tokenize(txt_to_explain)
+        num_txt_tokens = len(txt_tokens)
+        p = int(math.ceil(np.sqrt(num_txt_tokens)))
+        patch_size = 224 // p
+        img_tokens = [" " for el in range(1, p**2+1)]
+        txt_tokens = np.array(txt_tokens + img_tokens)
 
-            self.img = img
-            self.txt = txt
-            self.num_txt_token = num_txt_tokens
-            self.patch_size = patch_size
+        self.img = img_to_explain
+        self.txt = txt_to_explain
+        self.num_txt_token = num_txt_tokens
+        self.patch_size = patch_size
 
-            explainer = shap.Explainer(self.get_model_prediction, self.custom_masker, silent=True)
+        explainer = shap.Explainer(self.get_model_prediction, self.custom_masker, silent=True)
 
-            # print(txt_tokens.shape)
-            # print(type(txt_tokens))
-            txt_tokens = txt_tokens.reshape(1, -1)
-            #print(txt_tokens)
+        # print(txt_tokens.shape)
+        # print(type(txt_tokens))
+        txt_tokens = txt_tokens.reshape(1, -1)
+        #print(txt_tokens)
 
-            shap_values = explainer(txt_tokens)
-            self.display_image_text(shap_values)
-                        
-            print(self.num_txt_token)
-            print(shap_values.values.shape)
-            print(shap_values.values[0, self.num_txt_token:])
+        shap_values = explainer(txt_tokens)
+        self.display_image_text(shap_values)
+                    
+        print(self.num_txt_token)
+        print(shap_values.values.shape)
+        print(shap_values.values[0, self.num_txt_token:])
 
-            text_score, image_score = self.compute_mmscore(num_txt_tokens, shap_values)
-            mmscore_list.append(text_score)
-            
-        mmscore_array = np.array(mmscore_list)
-        mmshap_mean = np.mean(mmscore_array)
-        mmshap_variance = np.var(mmscore_array)
+        text_score, image_score = self.compute_mmscore(num_txt_tokens, shap_values)
+   
         
-        return mmshap_mean, mmshap_variance # image_score si ricava in automatico da text_score
+        return text_score # image_score si ricava in automatico da text_score

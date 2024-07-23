@@ -1,14 +1,16 @@
 import torch
+from DMSBE import *
 from torch.utils.data import DataLoader
 from torchvision.transforms import ToTensor
 from PIL import Image
 import os
 import numpy as np
 from tqdm import tqdm
-from transformers import AutoTokenizer
 from misogyny_trainer import *
 from multimodal_explainer import *
 from utils import *
+from mm_shap import *
+
 
 if __name__ == "__main__":
     ###########################
@@ -16,12 +18,12 @@ if __name__ == "__main__":
     ###########################
 
     #images_path = "/kaggle/input/dataset-wow/MAMI DATASET/MAMI DATASET/training/TRAINING"
-
+    """
     file_and_dest = [('train_image_text.tsv','train_image_text.json'),
                     ('test_image_text.tsv','test_image_text.json')]
 
     generate_json_file(file_and_dest)
-    
+    """
 
     """
     ######################
@@ -58,13 +60,21 @@ if __name__ == "__main__":
     images, texts, _, _, _, _, _ = next(iter(data))
     images = [ToTensor()(Image.open(f"{os.path.join('MAMI DATASET/training/TRAINING', img)}")) for img in images]
     img_to_explain = torch.clamp(images[27], min=0.0, max=np.float64(1)) # 27 is a random index
-    img_to_explain = (img_to_explain * 255).byte()
+    img_to_explain = (img_to_explain * 255).byte() # returns a tensor to avoid clamp errors
     txt_to_explain = texts[27]
 
-    analyzer = SingleModAnalyzer(classifier,
+    """     analyzer = SingleModAnalyzer(classifier,
                                 txt_tokenizer,
                                 (3, 440, 440), # CxWxH
                                 mask_token_txt="...") # da sviluppare l'img_token customizzabile
     
     print(img_to_explain)
     analyzer.SHAP_single_mod(txt_to_explain, img_to_explain, "results.html")
+
+    print("computing mmshap...")
+    MMSHAP = MMSHAP(classifier)
+    MMSHAP.wrapper_mmscore([txt_to_explain], [img_to_explain]) 
+    """
+    print("image_to_explain shape: ", img_to_explain.shape)
+    explainer=DMSBE(classifier, txt_tokenizer, (3, 440, 440))
+    explainer.explain([txt_to_explain], [img_to_explain])
