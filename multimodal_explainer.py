@@ -81,18 +81,12 @@ class SingleModAnalyzer:
         print(img_shap_val.values.shape)
         print(img_shap_val.data.numpy().shape)
 
-        #print(f"shapley values for the text: {txt_shap_val}")
-        """ shap.plots.bar(txt_shap_val) """
-        #plt.figure(figsize=(10, 6))
-        #plt.barh(txt_shap_val.data[0], txt_shap_val.values[0], color='skyblue')
-
-
         shap.image_plot(
             shap_values=img_shap_val.values,
             pixel_values=img_shap_val.data.numpy(),
         )
 
-        shap_explanation = shap.Explanation(values=txt_shap_val.values, feature_names=txt_shap_val.data)
+        shap_explanation = shap.Explanation(values=txt_shap_val.values.reshape(-1), feature_names=txt_shap_val.data[0])
         shap.plots.bar(shap_explanation, max_display=10) # Create a bar plot
         plt.show()
 

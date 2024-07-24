@@ -12,7 +12,6 @@ from nltk.tokenize import word_tokenize
 
 
 class MMSHAP:
-    
     def __init__(self,
                  classifier,
                  max_text_features_to_visualize=15):
@@ -31,7 +30,9 @@ class MMSHAP:
         shap_values_patches = shap_values.values[0, self.num_txt_token:]
         shap_values_img = torch.zeros(self.img.shape) # DA RIEMPIRE CON GLI SHAPLEY VALUE CALCOLATI SULLE PATCH
         data_txt = shap_values.data[0, :self.num_txt_token]
-        
+
+        print((shap_values_patches > 0.00001).sum())
+
         print(f'shap_values_txt.shape: {shap_values_txt.shape}')
         print(f'shap_values_patches.shape: {shap_values_patches.shape}')
         print(f'shap_values_img.shape: {shap_values_img.shape}')
@@ -51,6 +52,8 @@ class MMSHAP:
         
         shap_values_img = shap_values_img.permute(1, 2, 0)
         self.img = self.img.permute(1, 2, 0)
+
+        
         shap_values_img = shap_values_img
         
         shap.image_plot(
@@ -58,29 +61,9 @@ class MMSHAP:
             pixel_values = self.img.unsqueeze(0).numpy()
         )
 
-        print(f'shap_values.base_values: {shap_values.base_values}')
-
         shap_explanation = shap.Explanation(values=shap_values_txt, feature_names=data_txt)
         shap.plots.bar(shap_explanation, max_display=10) # Create a bar plot
         plt.show()
-        
-        """
-        shap_df = pd.DataFrame({'Feature': data_txt, 'SHAP Value': shap_values_txt})   # Assuming data_txt and shap_values_txt are already defined
-        shap_df = shap_df.sort_values(by='SHAP Value', ascending=False)  # Sort the DataFrame by SHAP values
-
-        k = 10 # Define the number of top features to visualize
-        top_shap_df = shap_df.head(k) # Select the top k features
-        colors = ['red' if value > 0 else 'blue' for value in top_shap_df['SHAP Value']]  # Assign colors based on SHAP values
-
-        # Create a bar plot
-        plt.figure(figsize=(10, 6))
-        plt.barh(top_shap_df['Feature'], top_shap_df['SHAP Value'], color=colors)
-        plt.xlabel('SHAP Value')
-        plt.title(f'Top {k} Features Based on SHAP Values')
-        plt.axvline(0, color='grey', linewidth=0.8, linestyle='--')  # Add a vertical line at x=0
-        plt.grid(axis='x', linestyle='--', alpha=0.7)
-        plt.show()
-        """
         
     def custom_masker(self, mask, x):
         masked_X = np.copy(x).reshape(1, -1) # fai controllo per vedere se effettivamente ha una shape  e.g. (1, 15)
@@ -149,8 +132,12 @@ class MMSHAP:
         self.patch_size = patch_size
 
         explainer = shap.Explainer(self.get_model_prediction, self.custom_masker, silent=True)
+
+        # print(txt_tokens.shape)
+        # print(type(txt_tokens))
         txt_tokens = txt_tokens.reshape(1, -1)
-    
+        #print(txt_tokens)
+
         shap_values = explainer(txt_tokens)
         self.display_image_text(shap_values)
                     
