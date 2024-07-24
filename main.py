@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
 
     # loading the model to explain
-    checkpoint = torch.load('C:\\Users\\chito\\Desktop\\model_3.pth', map_location=torch.device('cpu'))
+    checkpoint = torch.load('model_10.pth', map_location=torch.device('cpu'))
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     classifier = MisogynyCls(5).to(device)
     classifier.load_state_dict(checkpoint)
@@ -56,9 +56,7 @@ if __name__ == "__main__":
     txt_tokenizer = custom_word_tokenizer # taken from utils.py # text masker definition
     txt_to_explain = "HELLO, PRINCE! WILL YOU RAPE ME AND LIVE HAPPILY EVER AFTER WITH ME?"
 
-    image = ToTensor()(Image.open("./img_demo.jpg"))
-    img_to_explain = torch.clamp(image, min=0.0, max=np.float64(1))
-    img_to_explain = (img_to_explain * 255).byte() # returns a tensor to avoid clamp errors
+    img_to_explain = ToTensor()(Image.open("./img_demo.jpg"))
 
     """
     data = MultimodalDataset("C:\\Users\\chito\\Desktop\\dataset_xai\\MAMI DATASET\\training\\TRAINING", "train_image_text.json")

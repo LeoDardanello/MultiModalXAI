@@ -24,19 +24,32 @@ class DMSBE():
         mmscore_list= []
         
         for i in range(len(txt_to_explain)):
-            resized_img_to_explain = resize(img_to_explain[i])
+            byte_image = torch.clamp(img_to_explain[i], min=0.0, max=np.float64(1))
+            byte_image = (byte_image * 255).byte()
+            resized_img_to_explain = resize(byte_image)
             self.disentagled_modalities_explainer.SHAP_single_mod(txt_to_explain[i], resized_img_to_explain, "single_mode")
             t_shap=self.multimodal_interaction_explainer.wrapper_mmscore(txt_to_explain[i], resized_img_to_explain)
             mmscore_list.append(t_shap)
-        print(f"Mean multimodal interaction score (MM-SHAP) among {i+1} sample: {np.mean(np.array(mmscore_list))} +/- {np.std(np.array(mmscore_list))}")
+        print(f"Mean Text Modality Contribution (MM-SHAP) among {i+1} sample: {np.mean(np.array(mmscore_list))} +/- {np.std(np.array(mmscore_list))}")
+        print(f"Mean Image Modality Contribution (MM-SHAP) among {i+1} sample: {1-np.mean(np.array(mmscore_list))} +/- {np.std(np.array(mmscore_list))}")
 
     def only_disentagled_modalities_explain(self, txt_to_explain, img_to_explain):
+        resize = transforms.Resize((self.img_shape[1], self.img_shape[2]))
+
         for i in range(len(txt_to_explain)):
-            self.disentagled_modalities_explainer.SHAP_single_mod(txt_to_explain[i], img_to_explain[i], "single_mod")
+            byte_image = torch.clamp(img_to_explain[i], min=0.0, max=np.float64(1))
+            byte_image = (byte_image * 255).byte()
+            resized_img_to_explain = resize(byte_image)
+            self.disentagled_modalities_explainer.SHAP_single_mod(txt_to_explain[i], resized_img_to_explain, "single_mod")
 
     def only_multimodal_interaction_explain(self, txt_to_explain, img_to_explain):
+        resize = transforms.Resize((self.img_shape[1], self.img_shape[2]))
         mmscore_list= []
         for i in range(len(txt_to_explain)):
-            t_shap=self.multimodal_interaction_explainer.wrapper_mmscore(txt_to_explain[i], img_to_explain[i])
+            byte_image = torch.clamp(img_to_explain[i], min=0.0, max=np.float64(1))
+            byte_image = (byte_image * 255).byte()
+            resized_img_to_explain = resize(byte_image)
+            t_shap=self.multimodal_interaction_explainer.wrapper_mmscore(txt_to_explain[i], resized_img_to_explain)
             mmscore_list.append(t_shap)
-        print(f"Mean multimodal interaction score (MM-SHAP) among {i+1} sample: {np.mean(np.array(mmscore_list))} +/- {np.std(np.array(mmscore_list))}")
+        print(f"Mean Text Modality Contribution (MM-SHAP) among {i+1} sample: {np.mean(np.array(mmscore_list))} +/- {np.std(np.array(mmscore_list))}")
+        print(f"Mean Image Modality Contribution (MM-SHAP) among {i+1} sample: {1-np.mean(np.array(mmscore_list))} +/- {np.std(np.array(mmscore_list))}")
