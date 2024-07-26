@@ -48,7 +48,7 @@ The actual model is trained on 10 epochs with:
 - **Average Accuracy Test**:  58.2031%
 
 # Misogyny Dataset
-The MAMI Dataset have been retrieved  at the following link https://github.com/TIBHannover/multimodal-misogyny-detection-mami-2022/tree/main/data for the labels and here ## MISSING LINK ##for the data 
+The MAMI Dataset have been retrieved  at the following link https://github.com/TIBHannover/multimodal-misogyny-detection-mami-2022/tree/main/data for the labels and here https://github.com/TeamMAMI/MAMI for the data 
 
 # Setup Instructions
 To set up the the environment for this project, follow these steps:
