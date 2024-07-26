@@ -22,7 +22,7 @@ class Trainer():
                        drop_value=0.2,
                        batch_size=256, 
                        lr=0.001, 
-                       num_epochs=5,
+                       num_epochs=10,
                        threshold=0.5):
         
         # Check if CUDA is available
