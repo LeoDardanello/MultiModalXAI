@@ -16,7 +16,7 @@ We exploit a perturbation-based feature attribution method like SHAP for computi
 
 # How does it work
 
-## class DBSME
+# DBSME
 Class needed for computing both the single/multi interaction  between input modalities. It accept as parameters:
 - <u>**model**</u>: model to explain (Vision Language binary classifier);
 - <u>**txt_toknizer**</u>: tokenizer needed for dividing the input text into tokens to mask (needed for the mask explainer);
