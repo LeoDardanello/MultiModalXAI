@@ -67,7 +67,7 @@ class Trainer():
             print(f'Average Accuracy Train (task A): {train_acc_taskA_avg: .4f}%, Average Accuracy Test (task A): {train_acc_taskB_avg: .4f}%')
             print(f'Average Accuracy Train (task B): {test_acc_taskA_avg: .4f}%, Average Accuracy Test (task B): {test_acc_taskB_avg: .4f}%')
             
-        model_path = '/kaggle/working/model_' + str(epoch+1) + '.pth'
+        model_path = '/kaggle/working/model_' + str(epoch+1) + '.pth' # change for saving the model in to a predefined path
         torch.save(self.classifier.state_dict(), model_path);
             
             
