@@ -59,6 +59,8 @@ mm_xai_env\Scripts\activate # activate the environment for Windows
 # for Lunix, MacOS use => source mm_xai_env/bin/activate 
 pip install -r requirements.txt
 ```
+## Model checkpoint
+The model checkpoint could be found at the following link https://drive.google.com/file/d/1g-2zmPVnBnGiPLFQGlPNv8J7_tbZRKTy/view?usp=sharing. The path to the model checkpoint into the main.py file is relative to the project folder, so in case you do not want to place the model weights into it, then you have to change the path in the main file code (you will find two model, pick the one named "model_10.pth")
 
 # Demo 
 In order to reproduce the results showed at the beginning of the README file, produced from the trained Misogyny classifier, type the following code with no arguments:
