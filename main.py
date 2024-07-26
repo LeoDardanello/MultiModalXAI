@@ -19,7 +19,7 @@ if __name__ == "__main__":
     classifier = MisogynyCls(5).to(device)
     classifier.load_state_dict(checkpoint)
 
-    txt_tokenizer = custom_word_tokenizer # taken from utils.py # text masker definition
+    txt_tokenizer = custom_word_tokenizer 
 
     if len(sys.argv) == 1: # only the program name, then take the image from the github folder for the demo
         txt_to_explain = "HELLO, PRINCE! WILL YOU RAPE ME AND LIVE HAPPILY EVER AFTER WITH ME?"
@@ -35,6 +35,6 @@ if __name__ == "__main__":
     explainer=DMSBE(classifier, txt_tokenizer, (3, 224, 224)) # (3, 224, 224) is the shap that we want our explainer to work on... 
                                                               # this will be the size to which the input image will be resized
     
-    # .explain() takes a list of texts and a list of images,if explaining a single sample pass a list with one element
+    # .explain() takes a list of texts and a list of images, if explaining a single sample pass a list with one element
     explainer.explain([txt_to_explain], [img_to_explain])
 

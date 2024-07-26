@@ -9,31 +9,27 @@ from utils import *
 
 class OnlyTextCls(nn.Module):
     def __init__(self, cls):
-        super().__init__() # da aggiustare
+        super().__init__()
         self.classifier = cls
     
     def forward(self, text_list):
         text_list = [el.item() for el in text_list]
         null_images = [Image.new('RGB', (100, 100), color=(0, 0, 0)) for _ in range(len(text_list))]
         prediction, _ = self.classifier(text_list, null_images) # for now we return only the prediction about the main task (binary one)
-        #print(prediction)
     
         return prediction
     
     
 class OnlyImageCls(nn.Module):
     def __init__(self, cls):
-        super().__init__() # da aggiustare
+        super().__init__()
         self.classifier = cls
     
     def forward(self, image_list):
-        null_text = [" "  for _ in range(len(image_list))] # Da cambiare e parametrizzare il token nullo ('[UNK]')
+        null_text = [" "  for _ in range(len(image_list))]
         prediction, _ = self.classifier(null_text, image_list) # for now we return only the prediction about the main task (binary one)
-        #print(prediction)
         return prediction
 
-
-# DA INSERIRE LA PARAMETRIZZAZIONE ANCHE PER QUANTO RIGUARDA I METODI PER MASCHERARE L'INPUT
 
 class SingleModAnalyzer:
     def __init__(self,
@@ -61,33 +57,28 @@ class SingleModAnalyzer:
         resize = transforms.Resize((self.img_shape[1], self.img_shape[2]))
         img_to_explain = resize(img_to_explain).permute(1, 2, 0) # from CxWxH to WxHxC
         
-        
-        print(self.img_shape[0])
-        print(self.img_shape[1])
-        print(img_to_explain.shape)
-        
         self.only_img_classifier.classifier.eval()
         
         shap_values = self.img_explainer(
-            img_to_explain.unsqueeze(0), # we add a batch dimension, then make some asserts with print...
+            img_to_explain.unsqueeze(0), # we add a batch dimension
             max_evals=150,
             batch_size=50,
         )
         return shap_values
     
-    def SHAP_single_mod(self, txt_to_explain, img_to_explain, dest_folder):
+    def SHAP_single_mod(self, txt_to_explain, img_to_explain):
+        print("Preparing single mode text/image explanations...")
         img_shap_val = self.img_only_SHAP(img_to_explain)
         txt_shap_val = self.txt_only_SHAP(txt_to_explain)
-        print(img_shap_val.values.shape)
-        print(img_shap_val.data.numpy().shape)
 
+        print("Displaying single mode text/image explanations...")
         shap.image_plot(
             shap_values=img_shap_val.values,
             pixel_values=img_shap_val.data.numpy(),
         )
 
         shap_explanation = shap.Explanation(values=txt_shap_val.values.reshape(-1), feature_names=txt_shap_val.data[0])
-        shap.plots.bar(shap_explanation, max_display=10) # Create a bar plot
+        shap.plots.bar(shap_explanation, max_display=10)
         plt.show()
 
        

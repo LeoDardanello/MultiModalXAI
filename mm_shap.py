@@ -22,39 +22,26 @@ class MMSHAP:
         self.patch_size = None
         self.max_text_features_to_visualize = max_text_features_to_visualize
         
-    def display_image_text(self, shap_values):
-        print(f'shap_values.shape: {shap_values.shape}')
-        
-        # here the actual masking of the image is happening. The custom masker only specified which patches to mask, but no actual masking has happened
+    def display_image_text(self, shap_values):   
         shap_values_txt = shap_values.values[0, :self.num_txt_token]
         shap_values_patches = shap_values.values[0, self.num_txt_token:]
-        shap_values_img = torch.zeros(self.img.shape) # DA RIEMPIRE CON GLI SHAPLEY VALUE CALCOLATI SULLE PATCH
+        shap_values_img = torch.zeros(self.img.shape)
         data_txt = shap_values.data[0, :self.num_txt_token]
-
-        print((shap_values_patches > 0.00001).sum())
-
-        print(f'shap_values_txt.shape: {shap_values_txt.shape}')
-        print(f'shap_values_patches.shape: {shap_values_patches.shape}')
-        print(f'shap_values_img.shape: {shap_values_img.shape}')
-        print(f'self.image.shape: {self.img.shape}')
-        print(f'patch_size: {self.patch_size}')
         
-        row_cols = self.img.shape[1] // self.patch_size # 224 / 32 = 7
+        row_cols = self.img.shape[1] // self.patch_size # 224 / 32 = 7 (224 is the size that WE DECIDED TO USE AS EXAMPLE, you could use the shap that you like and that your images support)
 
-        # PATCHIFY THE IMAGE & SET THE PATCH TO THE RIGHT SHAPLEY VALUE (THIS MATRIX WILL THEN BE PASSED TO THE IMAGE_PLOT FUNCTION IN SHAP)
+        # PATCHIFY THE IMAGE & SET THE PATCH TO THE SHAP VALUE SPECIFIED (THIS MATRIX WILL THEN BE PASSED TO THE IMAGE_PLOT FUNCTION IN SHAP)
+        
         for (i, shap_val) in enumerate(shap_values_patches):
-            print(f'i: {i} - shap_val: {shap_val}')
             m = i // row_cols
             n = i % row_cols
             shap_values_img[:, m*self.patch_size:(m+1)*self.patch_size, n*self.patch_size:(n+1)*self.patch_size] = shap_val # torch.rand(3, patch_size, patch_size)  # np.random.rand()
-        
-        # plot shapley values for texts and images
-        
-        shap_values_img = shap_values_img.permute(1, 2, 0)
-        self.img = self.img.permute(1, 2, 0)
 
+        # plot shapley values for texts and images
+        shap_values_img = shap_values_img.permute(1, 2, 0) # from CxWxH to WxHxC because the explainer desires this format
+        self.img = self.img.permute(1, 2, 0)
         
-        shap_values_img = shap_values_img
+        print("Displaying multimodal interaction for text/image explanations...")
         
         shap.image_plot(
             shap_values = [shap_values_img.unsqueeze(0).numpy()], 
@@ -62,29 +49,25 @@ class MMSHAP:
         )
 
         shap_explanation = shap.Explanation(values=shap_values_txt, feature_names=data_txt)
-        shap.plots.bar(shap_explanation, max_display=10) # Create a bar plot
+        shap.plots.bar(shap_explanation, max_display=10)
         plt.show()
         
     def custom_masker(self, mask, x):
-        masked_X = np.copy(x).reshape(1, -1) # fai controllo per vedere se effettivamente ha una shape  e.g. (1, 15)
-        mask = np.expand_dims(mask, axis=0) # same as unsqueeze(0)
+        masked_X = np.copy(x).reshape(1, -1)
+        mask = np.expand_dims(mask, axis=0)
         masked_X[~mask] = "UNK"
         return masked_X
 
     def get_model_prediction(self, x): # x must be an ndarray of strings representing the couple (perturbed_txt, perturbed_img)
-        #print(x)
         self.classifier.eval()
         perturbed_imgs = []
 
         with torch.no_grad():
             # split up the input_ids and the image_token_ids from x (containing both appended)
             masked_txt_tokens = [input_string[:self.num_txt_token] for input_string in x]
-            masked_image_tokens = [input_string[self.num_txt_token:] for input_string in x]
             perturbed_txts = [' '.join(token_list.tolist()) for token_list in masked_txt_tokens]
+            masked_image_tokens = [input_string[self.num_txt_token:] for input_string in x]
             
-            #print(perturbed_txts)
-
-            result = np.zeros(len(x))
             row_cols = 224 // self.patch_size # 224 / 32 = 7
 
             # call the model for each "new image" generated with masked features
@@ -92,8 +75,6 @@ class MMSHAP:
                 perturbed_img = copy.deepcopy(self.img)
 
                 # here the actual masking of the image is happening. The custom masker only specified which patches to mask, but no actual masking has happened
-                curr_masked_txt_tokens = copy.deepcopy(masked_txt_tokens[i])
-
                 # PATCHIFY THE IMAGE
                 for k in range(len(masked_image_tokens[i])):
                     if masked_image_tokens[i][k] == "UNK":  # should be the patch we want to mask
@@ -108,17 +89,15 @@ class MMSHAP:
         return outputs_taskA
 
     
-    def compute_mmscore(self, num_txt_tokens, shap_values):
-        print(shap_values.values.shape)
-        #print(shap_values.data)
-        
+    def compute_mmscore(self, num_txt_tokens, shap_values):        
         text_contrib = np.abs(shap_values.values[0, :num_txt_tokens]).sum()
         image_contrib = np.abs(shap_values.values[0, num_txt_tokens:]).sum()
         text_score = text_contrib / (text_contrib + image_contrib)
         image_score = image_contrib / (text_contrib + image_contrib) # is just 1 - text_score in the two modalities case
         return text_score, image_score
     
-    def wrapper_mmscore(self, txt_to_explain, img_to_explain): #img must be a tensor of shape CxWxH
+    def wrapper_mmscore(self, txt_to_explain, img_to_explain): # img must be a tensor of shape CxWxH
+        print("Computing multimodal interaction for text/image explanations...")
         txt_tokens = word_tokenize(txt_to_explain)
         num_txt_tokens = len(txt_tokens)
         p = int(math.ceil(np.sqrt(num_txt_tokens)))
@@ -132,20 +111,9 @@ class MMSHAP:
         self.patch_size = patch_size
 
         explainer = shap.Explainer(self.get_model_prediction, self.custom_masker, silent=True)
-
-        # print(txt_tokens.shape)
-        # print(type(txt_tokens))
         txt_tokens = txt_tokens.reshape(1, -1)
-        #print(txt_tokens)
-
         shap_values = explainer(txt_tokens)
         self.display_image_text(shap_values)
-                    
-        print(self.num_txt_token)
-        print(shap_values.values.shape)
-        print(shap_values.values[0, self.num_txt_token:])
 
-        text_score, image_score = self.compute_mmscore(num_txt_tokens, shap_values)
-   
-        
-        return text_score # image_score si ricava in automatico da text_score
+        text_score, _ = self.compute_mmscore(num_txt_tokens, shap_values)
+        return text_score # compute imahe_score from text_score as (1-text_Score)

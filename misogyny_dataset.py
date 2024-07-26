@@ -45,7 +45,6 @@ def load_json_file(json_file_path):
             objectification_label_list.append(float(item["objectification"]))
             violence_label_list.append(float(item["violence"]))
 
-        #print(f"{type(labels_misogyny)}")
         return image_list, text_list, torch.tensor(labels_misogyny, dtype=torch.float32), torch.tensor(shaming_label_list, dtype=torch.float32), torch.tensor(stereotype_label_list, dtype=torch.float32), torch.tensor(objectification_label_list, dtype=torch.float32), torch.tensor(violence_label_list, dtype=torch.float32)
     
 def accuracy(preds, labels, thresh):
