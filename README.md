@@ -55,7 +55,8 @@ To set up the the environment for this project, follow these steps:
 
 ```
 python -m venv mm_xai_env
-mm_xai_env\Scripts\activate # activate the environment (this is the Windows version)
+mm_xai_env\Scripts\activate # activate the environment for Windows
+# for Lunix, MacOS use => source mm_xai_env/bin/activate 
 pip install -r requirements.txt
 ```
 
