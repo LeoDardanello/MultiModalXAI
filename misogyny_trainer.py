@@ -20,13 +20,10 @@ class Trainer():
                        json_test_path,
                        num_linear_layers=5,
                        drop_value=0.2,
-                       train_data_split=0.8,
                        batch_size=256, 
                        lr=0.001, 
                        num_epochs=5,
-                       threshold=0.5,
-                       weight_taskA=1,
-                       weight_taskB=1):
+                       threshold=0.5):
         
         # Check if CUDA is available
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -37,8 +34,6 @@ class Trainer():
         self.test_image_dir = test_image_dir
         self.num_epochs = num_epochs
         self.threshold = threshold
-        self.weight_taskA = weight_taskA
-        self.weight_taskB = weight_taskB
         
         train_data = MultimodalDataset(train_images_dir, json_train_path)
         test_data = MultimodalDataset(test_image_dir, json_test_path)
@@ -54,10 +49,6 @@ class Trainer():
         self.optimizer = optim.Adam(self.classifier.parameters(), lr)
         self.loss_taskA = F.binary_cross_entropy 
         self.loss_taskB = F.binary_cross_entropy
-
-        # Pretrained CLIP loading...
-        #self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32", device_map='cuda')
-        #self.clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
         
         
     def train_model(self):
@@ -104,7 +95,7 @@ class Trainer():
 
             loss_A = self.loss_taskA(pred_taskA, labels_misogyny)
             loss_B = self.loss_taskB(pred_taskB, labels_taskB, reduction='mean')
-            loss = (self.weight_taskA * loss_A) + (self.weight_taskB * loss_B)
+            loss = loss_A + loss_B
             train_loss_list.append(loss)
             
             loss.backward()
@@ -132,7 +123,7 @@ class Trainer():
 
                 loss_A = self.loss_taskA(pred_taskA, labels_misogyny)
                 loss_B = self.loss_taskB(pred_taskB, labels_taskB, reduction='mean')
-                loss = (self.weight_taskA * loss_A) + (self.weight_taskB * loss_B)
+                loss = loss_A + loss_B
                 test_loss_list.append(loss)
 
                 accuracy_taskA = accuracy(pred_taskA, labels_misogyny, self.threshold)
