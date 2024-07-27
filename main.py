@@ -35,6 +35,10 @@ if __name__ == "__main__":
     explainer=DMSBE(classifier, txt_tokenizer, (3, 224, 224)) # (3, 224, 224) is the shap that we want our explainer to work on... 
                                                               # this will be the size to which the input image will be resized
     
+
+
+
+    
     # .explain() takes a list of texts and a list of images, if explaining a single sample pass a list with one element
     explainer.explain([txt_to_explain], [img_to_explain])
 
