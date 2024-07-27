@@ -14,13 +14,15 @@ from nltk.tokenize import word_tokenize
 class MMSHAP:
     def __init__(self,
                  classifier,
-                 max_text_features_to_visualize=15):
+                 max_text_features_to_visualize=15,
+                 mask_token="..."):
         self.classifier = classifier
         self.img = None
         self.txt = None
         self.num_txt_token = None
         self.patch_size = None
         self.max_text_features_to_visualize = max_text_features_to_visualize
+        self.mask_token = mask_token
         
     def display_image_text(self, shap_values):   
         shap_values_txt = shap_values.values[0, :self.num_txt_token]
@@ -55,7 +57,7 @@ class MMSHAP:
     def custom_masker(self, mask, x):
         masked_X = np.copy(x).reshape(1, -1)
         mask = np.expand_dims(mask, axis=0)
-        masked_X[~mask] = "UNK"
+        masked_X[~mask] = self.mask_token
         return masked_X
 
     def get_model_prediction(self, x): # x must be an ndarray of strings representing the couple (perturbed_txt, perturbed_img)
@@ -77,7 +79,7 @@ class MMSHAP:
                 # here the actual masking of the image is happening. The custom masker only specified which patches to mask, but no actual masking has happened
                 # PATCHIFY THE IMAGE
                 for k in range(len(masked_image_tokens[i])):
-                    if masked_image_tokens[i][k] == "UNK":  # should be the patch we want to mask
+                    if masked_image_tokens[i][k] == self.mask_token:  # should be the patch we want to mask
                         m = k // row_cols
                         n = k % row_cols
                         perturbed_img[:, m*self.patch_size:(m+1)*self.patch_size, n*self.patch_size:(n+1)*self.patch_size] = 0 # torch.rand(3, patch_size, patch_size)  # np.random.rand()

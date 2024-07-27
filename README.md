@@ -4,9 +4,9 @@ Project for the Explanaible and Trustworthy AI course @ Polito 2023/2024:
 # Disentangled Multi modal Shap Based (Local) Explanations for Vision Language Classifiers
 
 
-| ![Alt text](./images/single_mode_img.png) <br> <h3 style="text-align:center;">Single modality interaction image</h3> | ![Alt text](./images/multi_mode_img.png) <br> <h3 style="text-align:center;">Multi modality interaction image</h3> |
+| ![Alt text](./images/single_mod_img.png) <br> <h3 style="text-align:center;">Single modality interaction image</h3> | ![Alt text](./images/multi_mod_img.png) <br> <h3 style="text-align:center;">Multi modality interaction image</h3> |
 |-------------------------------------------|-------------------------------------------|
-| ![Alt text](./images/single_mode_txt.png) <br> <h3 style="text-align:center;">Single modality interaction text</h3> | ![Alt text](./images/multi_mode_txt.png) <br> <h3 style="text-align:center;">Multi modality interaction text</h3> |
+| ![Alt text](./images/single_mod_txt.png) <br> <h3 style="text-align:center;">Single modality interaction text</h3> | ![Alt text](./images/multi_mod_txt.png) <br> <h3 style="text-align:center;">Multi modality interaction text</h3> |
 
 ## Explanation method
 

@@ -14,7 +14,7 @@ import sys
 
 
 if __name__ == "__main__":
-    checkpoint = torch.load('C:\\Users\\chito\\Desktop\\model_3.pth', map_location=torch.device('cpu'))
+    checkpoint = torch.load("C:\\Users\\chito\\Downloads\\MysogenClassifier_checkpoints\\model_10.pth", map_location=torch.device('cpu'))
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     classifier = MisogynyCls(5).to(device)
     classifier.load_state_dict(checkpoint)
@@ -22,8 +22,8 @@ if __name__ == "__main__":
     txt_tokenizer = custom_word_tokenizer 
 
     if len(sys.argv) == 1: # only the program name, then take the image from the github folder for the demo
-        txt_to_explain = "HELLO, PRINCE! WILL YOU RAPE ME AND LIVE HAPPILY EVER AFTER WITH ME?"
-        image = ToTensor()(Image.open("./images/img_demo.jpg"))
+        txt_to_explain = "WIFE SAID SHE WANTED SPACE SENT HER THERE WITH ONE PUNCH"
+        image = ToTensor()(Image.open("./images/image_demo.jpg"))
         
     else:
         image = ToTensor()(Image.open(sys.argv[1])) 

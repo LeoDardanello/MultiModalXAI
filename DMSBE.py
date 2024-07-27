@@ -13,10 +13,10 @@ class DMSBE():
         self.img_shape = img_shape
         self.token_for_text_masking = token_for_text_masking
         self.disentagled_modalities_explainer = SingleModAnalyzer(self.model,
-                                                        self.txt_tokenizer ,
+                                                        self.txt_tokenizer,
                                                         self.img_shape,
                                                         self.token_for_text_masking)
-        self.multimodal_interaction_explainer = MMSHAP(self.model)
+        self.multimodal_interaction_explainer = MMSHAP(self.model, mask_token=token_for_text_masking)
 
     def explain(self, txt_to_explain, img_to_explain):
         resize = transforms.Resize((self.img_shape[1], self.img_shape[2]))

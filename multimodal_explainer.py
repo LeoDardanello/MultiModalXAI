@@ -26,7 +26,7 @@ class OnlyImageCls(nn.Module):
         self.classifier = cls
     
     def forward(self, image_list):
-        null_text = [" "  for _ in range(len(image_list))]
+        null_text = [""  for _ in range(len(image_list))]
         prediction, _ = self.classifier(null_text, image_list) # for now we return only the prediction about the main task (binary one)
         return prediction
 
