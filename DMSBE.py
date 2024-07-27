@@ -20,23 +20,32 @@ class DMSBE():
 
     def explain(self, txt_to_explain, img_to_explain):
         resize = transforms.Resize((self.img_shape[1], self.img_shape[2]))
-
         mmscore_list= []
         
         for i in range(len(txt_to_explain)):
-            resized_img_to_explain = resize(img_to_explain[i])
+            clamped_image = torch.clamp(img_to_explain[i], min=0.0, max=np.float64(1))
+            byte_image = (clamped_image * 255).byte() # returns a tensor to avoid clamp errors
+            resized_img_to_explain = resize(byte_image)
             self.disentagled_modalities_explainer.SHAP_single_mod(txt_to_explain[i], resized_img_to_explain)
             t_shap=self.multimodal_interaction_explainer.wrapper_mmscore(txt_to_explain[i], resized_img_to_explain)
             mmscore_list.append(t_shap)
         print(f"Mean multimodal interaction score (MM-SHAP) among {i+1} sample: {np.mean(np.array(mmscore_list))} +/- {np.std(np.array(mmscore_list))}")
 
     def only_disentagled_modalities_explain(self, txt_to_explain, img_to_explain):
+        resize = transforms.Resize((self.img_shape[1], self.img_shape[2]))
         for i in range(len(txt_to_explain)):
-            self.disentagled_modalities_explainer.SHAP_single_mod(txt_to_explain[i], img_to_explain[i])
+            clamped_image = torch.clamp(img_to_explain[i], min=0.0, max=np.float64(1))
+            byte_image = (clamped_image * 255).byte() # returns a tensor to avoid clamp errors
+            resized_img_to_explain = resize(byte_image)
+            self.disentagled_modalities_explainer.SHAP_single_mod(txt_to_explain[i], resized_img_to_explain)
 
     def only_multimodal_interaction_explain(self, txt_to_explain, img_to_explain):
+        resize = transforms.Resize((self.img_shape[1], self.img_shape[2]))
         mmscore_list= []
         for i in range(len(txt_to_explain)):
-            t_shap=self.multimodal_interaction_explainer.wrapper_mmscore(txt_to_explain[i], img_to_explain[i])
+            clamped_image = torch.clamp(img_to_explain[i], min=0.0, max=np.float64(1))
+            byte_image = (clamped_image * 255).byte() # returns a tensor to avoid clamp errors
+            resized_img_to_explain = resize(byte_image)
+            t_shap=self.multimodal_interaction_explainer.wrapper_mmscore(txt_to_explain[i], resized_img_to_explain)
             mmscore_list.append(t_shap)
         print(f"Mean multimodal interaction score (MM-SHAP) among {i+1} sample: {np.mean(np.array(mmscore_list))} +/- {np.std(np.array(mmscore_list))}")

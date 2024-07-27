@@ -14,7 +14,7 @@ import sys
 
 
 if __name__ == "__main__":
-    checkpoint = torch.load("C:\\Users\\chito\\Downloads\\MysogenClassifier_checkpoints\\model_10.pth", map_location=torch.device('cpu'))
+    checkpoint = torch.load("model_10.pth", map_location=torch.device('cpu'))
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     classifier = MisogynyCls(5).to(device)
     classifier.load_state_dict(checkpoint)
@@ -29,12 +29,9 @@ if __name__ == "__main__":
         image = ToTensor()(Image.open(sys.argv[1])) 
         txt_to_explain = sys.argv[2] 
 
-    img_to_explain = torch.clamp(image, min=0.0, max=np.float64(1))
-    img_to_explain = (img_to_explain * 255).byte() # returns a tensor to avoid clamp errors
 
     explainer=DMSBE(classifier, txt_tokenizer, (3, 224, 224)) # (3, 224, 224) is the shap that we want our explainer to work on... 
                                                               # this will be the size to which the input image will be resized
-    
     # .explain() takes a list of texts and a list of images, if explaining a single sample pass a list with one element
-    explainer.explain([txt_to_explain], [img_to_explain])
+    explainer.explain([txt_to_explain], [image])
 
